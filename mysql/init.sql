@@ -1,0 +1,10 @@
+-- Creation de la bdd
+CREATE DATABASE IF NOT EXISTS sae61db;
+USE sae61db;
+
+CREATE TABLE IF NOT EXISTS utilisateur (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    identifiant VARCHAR(10) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL
+);

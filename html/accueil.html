@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil</title>
+    <style>
+        p,a {
+            font-size: 30px;
+            text-align: center;
+        }
+        h1 {
+            text-align: center;
+            font-size: 50px;
+        }
+        body {
+            background-color: aquamarine;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bienvenue sur le site JA DevOps</h1>
+    <p>Cliquez sur le lien ci-dessous pour créer un nouveau compte utilisateur :</p>
+    <a href="{{ url_for('new_user') }}">Créer un nouveau compte</a>
+</body>
+</html>

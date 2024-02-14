@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un nouveau compte</title>
+    <style>
+        h1 {
+            text-align: center;
+            font-size: 50px;
+        }
+        form {
+            text-align: center;
+            font-size: 15px;
+        }
+        body {
+            background-color: aquamarine;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Créer un nouveau compte utilisateur</h1>
+    <form action="{{ url_for('submit') }}" method="POST">
+        <label for="identifiant"> :</label><br>
+        <input type="text" id="identifiant" name="identifiant" required><br><br>
+        
+        <label for="password"><strong>Mot de passe :</strong></label><br>
+        <input type="password" id="password" name="password" required><br><br>
+        
+        <label for="email"><strong> e-mail :</strong></label><br>
+        <input type="email" id="email" name="email" required><br><br>
+        
+        <button type="submit">Valider</button>
+        <button type="button">Annuler</button>
+    </form>
+</body>
+</html>
+
+
+<form action="{{ url_for('submit') }}" method="POST"></form>

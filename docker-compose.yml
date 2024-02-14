@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql
+    build:
+      context: .
+      dockerfile: mysql/Dockerfile
+    command: --local-infile=1
+    networks:
+      - sae61-1
+
+  flask:
+    image: flask
+    build:
+      context: .
+      dockerfile: flask/Dockerfile
+    ports:
+      - "5000:5000"
+    networks:
+      - sae61-1
+
+networks:
+  sae61-1:
+    driver: bridge
