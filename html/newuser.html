@@ -18,21 +18,30 @@
             text-align: center;
         }
     </style>
+    <script>
+        function inscriptionReussie() {
+            alert("Inscription réussie !");
+        }
+
+        function retourAccueil() {
+            window.location.href = "{{ url_for('index') }}";
+        }
+    </script>
 </head>
 <body>
     <h1>Créer un nouveau compte utilisateur</h1>
-    <form action="{{ url_for('submit') }}" method="POST">
-        <label for="identifiant"> :</label><br>
+    <form id="userForm" action="{{ url_for('submit') }}" method="POST">
+        <label for="identifiant">Identifiant :</label><br>
         <input type="text" id="identifiant" name="identifiant" required><br><br>
         
-        <label for="password"><strong>Mot de passe :</strong></label><br>
-        <input type="password" id="password" name="password" required><br><br>
-        
-        <label for="email"><strong> e-mail :</strong></label><br>
+        <label for="email">Adresse e-mail :</label><br>
         <input type="email" id="email" name="email" required><br><br>
         
+        <label for="password">Mot de passe :</label><br>
+        <input type="password" id="password" name="password" required><br><br>
+
         <button type="submit">Valider</button>
-        <button type="button">Annuler</button>
+        <button type="button" onclick="retourAccueil()">Annuler</button>
     </form>
 </body>
 </html>

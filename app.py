@@ -6,88 +6,47 @@ import re
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Clé secrète pour les messages flash
 
+# Configuration de la base de données MySQL
+app.config['MYSQL_HOST'] = '172.18.0.3'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'root'
+app.config['MYSQL_DB'] = 'sae61db'
+app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+
 # Initialize MySQL
 mysql = MySQL(app)
 
 # Initialize Bcrypt
 bcrypt = Bcrypt(app)
 
+# Fonction pour valider le nom d'utilisateur
 def validate_username(username):
     messages = []
-    
-    # Regex pour vérifier les critères du nom d'utilisateur
-    regex = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$'
-
-    # Vérification de la longueur minimale du nom d'utilisateur
-    if len(username) < 6:
-        messages.append("Le nom d'utilisateur doit contenir au moins 6 caractères.")
-    
-    # Vérification de la présence de caractères minuscules dans le nom d'utilisateur
-    if not any(char.islower() for char in username):
-        messages.append("Le nom d'utilisateur doit contenir au moins une lettre minuscule.")
-    
-    # Vérification de la présence de caractères majuscules dans le nom d'utilisateur
-    if not any(char.isupper() for char in username):
-        messages.append("Le nom d'utilisateur doit contenir au moins une lettre majuscule.")
-    
-    # Vérification de la présence de chiffres dans le nom d'utilisateur
-    if not any(char.isdigit() for char in username):
-        messages.append("Le nom d'utilisateur doit contenir au moins un chiffre.")
-
-    # Vérification du nom d'utilisateur avec la regex
+    regex = r'^[a-zA-Z0-9]{6,10}$'  # Contraintes sur le nom d'utilisateur
     if not re.match(regex, username):
-        messages.append("Le nom d'utilisateur ne respecte pas tous les critères.")
+        messages.append("Le nom d'utilisateur doit contenir entre 6 et 10 caractères alphanumériques ASCII.")
     else:
         messages.append("Rempli avec succès.")
-    
     return messages
 
+# Fonction pour valider le mot de passe
 def validate_password(password):
     messages = []
-    
-    # Regex pour vérifier les critères du mot de passe
-    regex = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#%{}])[A-Za-z\d@#%{}]{6,15}$'
-
-    # Vérification de la longueur du mot de passe
-    if len(password) < 6 or len(password) > 15:
-        messages.append("Le mot de passe doit contenir entre 6 et 15 caractères.")
-    
-    # Vérification de la présence de chiffres dans le mot de passe
-    if not any(char.isdigit() for char in password):
-        messages.append("Le mot de passe doit contenir au moins un chiffre.")
-    
-    # Vérification de la présence de caractères minuscules dans le mot de passe
-    if not any(char.islower() for char in password):
-        messages.append("Le mot de passe doit contenir au moins une lettre minuscule.")
-    
-    # Vérification de la présence de caractères majuscules dans le mot de passe
-    if not any(char.isupper() for char in password):
-        messages.append("Le mot de passe doit contenir au moins une lettre majuscule.")
-    
-    # Vérification de la présence de caractères spéciaux dans le mot de passe
-    if not any(char in '@#%{}' for char in password):
-        messages.append("Le mot de passe doit contenir au moins un des caractères suivants : @#%{}")
-    
-    # Vérification du mot de passe avec la regex
+    regex = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[%#@{}])[A-Za-z\d%@#{}]{6,15}$'  # Contraintes sur le mot de passe
     if not re.match(regex, password):
-        messages.append("Le mot de passe ne respecte pas tous les critères.")
+        messages.append("Le mot de passe doit contenir entre 6 et 15 caractères, avec au moins une minuscule, une majuscule, un chiffre et un caractère spécial parmi #%{}@.")
     else:
         messages.append("Rempli avec succès.")
-    
     return messages
 
+# Fonction pour valider l'adresse email
 def validate_email(email):
     messages = []
-    
-    # Regex pour vérifier les critères de l'adresse e-mail
-    regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-
-    # Vérification de l'adresse e-mail avec la regex
+    regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'  # Contraintes sur l'adresse email
     if not re.match(regex, email):
-        messages.append("L'adresse e-mail n'est pas valide.")
+        messages.append("Adresse email invalide.")
     else:
         messages.append("Rempli avec succès.")
-    
     return messages
 
 @app.route('/')
@@ -105,43 +64,45 @@ def submit():
         password = request.form['password']
         email = request.form['email']
 
-        # Valider l'identifiant
-        validation_messages = validate_username(identifiant)
-        if validation_messages:
-            flash(validation_messages[0], 'error')
-            return redirect(url_for('new_user'))
-
-        # Valider le mot de passe
-        validation_messages = validate_password(password)
-        if validation_messages:
-            flash(validation_messages[0], 'error')
-            return redirect(url_for('new_user'))
-
-        # Valider l'adresse e-mail
-        validation_messages = validate_email(email)
-        if validation_messages:
-            flash(validation_messages[0], 'error')
-            return redirect(url_for('new_user'))
-
-        # Vérifier si l'identifiant ou l'email est déjà utilisé
+        # Connexion à la base de données
         cur = mysql.connection.cursor()
-        cur.execute("SELECT * FROM utilisateurs WHERE identifiant = %s OR email = %s", (identifiant, email))
+
+        # Vérification si l'identifiant ou l'email est déjà utilisé
+        cur.execute("SELECT * FROM utilisateur WHERE identifiant = %s OR email = %s", (identifiant, email))
         user = cur.fetchone()
 
         if user:
             flash('Identifiant ou email déjà utilisé', 'error')
             return redirect(url_for('new_user'))
 
-        # Hasher le mot de passe
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        # Vérification des critères du nom d'utilisateur
+        username_messages = validate_username(identifiant)
 
-        # Insérer le nouvel utilisateur dans la base de données
-        cur.execute("INSERT INTO utilisateurs (identifiant, email, password_hash) VALUES (%s, %s, %s)", (identifiant, email, hashed_password))
-        mysql.connection.commit()
-        cur.close()
+        # Vérification des critères du mot de passe
+        password_messages = validate_password(password)
 
-        flash('Utilisateur enregistré avec succès', 'success')
-        return redirect(url_for('index'))
+        # Vérification des critères de l'adresse email
+        email_messages = validate_email(email)
+
+        # Si toutes les conditions sont respectées
+        if all(messages == ["Rempli avec succès."] for messages in [username_messages, password_messages, email_messages]):
+            # Hashage du mot de passe
+            hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+            # Insertion du nouvel utilisateur dans la base de données
+            cur.execute("INSERT INTO utilisateur (identifiant, email, password_hash) VALUES (%s, %s, %s)", (identifiant, email, hashed_password))
+            mysql.connection.commit()
+            cur.close()
+
+            flash('Inscription réussie', 'success')
+            return redirect(url_for('index'))
+
+        # Si au moins une condition n'est pas respectée, réafficher la page avec les messages d'erreur
+        else:
+            for messages in [username_messages, password_messages, email_messages]:
+                for message in messages:
+                    flash(message, 'error')
+            return redirect(url_for('new_user'))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
