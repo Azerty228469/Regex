@@ -1,28 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_mysqldb import MySQL
 from flask_bcrypt import Bcrypt
-import re
 
 app = Flask(__name__, template_folder='/srv/templates')
 app.secret_key = 'your_secret_key'  # Clé secrète pour les messages flash
-
-# Configuration de la base de données MySQL
-app.config['MYSQL_HOST'] = 'mysql'  # Nom du service Docker MySQL
-app.config['MYSQL_USER'] = 'root'   # Utilisateur MySQL
-app.config['MYSQL_PASSWORD'] = 'password'  # Mot de passe MySQL
-app.config['MYSQL_DB'] = 'users'    # Nom de la base de données MySQL
 
 # Initialize MySQL
 mysql = MySQL(app)
 
 # Initialize Bcrypt
 bcrypt = Bcrypt(app)
-
-# Regex pour la validation de l'identifiant
-ID_REGEX = re.compile(r'^[a-z0-9]{6,10}$')
-
-# Regex pour la validation du mot de passe
-PASSWORD_REGEX = re.compile(r'^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[%#{}@])[a-zA-Z\d#%{}@]{6,15}$')
 
 @app.route('/')
 def index():
@@ -38,14 +25,6 @@ def submit():
         identifiant = request.form['identifiant']
         password = request.form['password']
         email = request.form['email']
-
-        # Validation de l'identifiant et du mot de passe
-        if not ID_REGEX.match(identifiant):
-            flash('Identifiant invalide', 'error')
-            return render_template('newuser.html')
-        if not PASSWORD_REGEX.match(password):
-            flash('Mot de passe invalide', 'error')
-            return render_template('newuser.html')
 
         # Vérifier si l'identifiant ou l'email est déjà utilisé
         cur = mysql.connection.cursor()
@@ -69,4 +48,3 @@ def submit():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
-
