@@ -7,7 +7,7 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Clé secrète pour les messages flash
 
 # Configuration de la base de données MySQL
-app.config['MYSQL_HOST'] = '172.18.0.3'
+app.config['MYSQL_HOST'] = 'regex-mysql-1'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'root'
 app.config['MYSQL_DB'] = 'sae61db'
