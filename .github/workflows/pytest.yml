@@ -17,4 +17,4 @@ jobs:
       - name: Afficher la version de Python
         run: python --version
       - name: Run tests
-        run: pytest Regex/app.py
+        run: pytest app.py
